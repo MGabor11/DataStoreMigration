@@ -1,22 +1,33 @@
 package com.example.datastoremigration.store
 
-import android.content.SharedPreferences
-import androidx.core.content.edit
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 
 @Singleton
 class UserStoreImpl @Inject constructor(
-    private val sharedPreferences: SharedPreferences
+    private val userPreferencesDataStore: DataStore<Preferences>
 ) : UserStore {
 
-    override fun saveUserName(name: String) {
-        sharedPreferences.edit {
-            putString(PREF_USER_NAME, name)
+    private val USER_NAME = stringPreferencesKey(PREF_USER_NAME)
+
+    override suspend fun saveUserName(name: String) {
+        userPreferencesDataStore.edit { preferences ->
+            preferences[USER_NAME] = name
         }
     }
 
-    override fun getUserName(): String? = sharedPreferences.getString(PREF_USER_NAME, "")
+    override fun getUserName(): Flow<String> = userPreferencesDataStore.data
+        .map { preferences ->
+            preferences[USER_NAME] ?: ""
+        }.flowOn(Dispatchers.IO)
 
     companion object {
         private const val PREF_USER_NAME = "PREF_USER_NAME"
