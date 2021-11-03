@@ -16,6 +16,10 @@ class StoreModule {
     @Singleton
     @Provides
     fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
-        return context.getSharedPreferences("user", Context.MODE_PRIVATE)
+        return context.getSharedPreferences(USER_SHARED_PREF_NAME, Context.MODE_PRIVATE)
+    }
+
+    companion object {
+        private const val USER_SHARED_PREF_NAME = "user"
     }
 }
